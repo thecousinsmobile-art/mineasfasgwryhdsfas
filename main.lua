@@ -18,7 +18,7 @@ local vape
 local loadstring = function(...)
 	local res, err = loadstring(...)
 	if err and vape then
-		vape:CreateNotification('Pistonware', 'Failed to load : '..err, 30, 'alert')
+		vape:CreateNotification('ClayV1', 'Failed to load : '..err, 30, 'alert')
 	end
 	return res
 end
@@ -99,7 +99,7 @@ local downloaderGui, downloaderLabel
 local function updateDownloader(text)
 	if not downloaderGui then
 		downloaderGui = Instance.new('ScreenGui')
-		downloaderGui.Name = 'PistonwareDownloader'
+		downloaderGui.Name = 'ClayV1Downloader'
 		downloaderGui.ResetOnSpawn = false
 		downloaderGui.Parent = cloneref(game:GetService('CoreGui'))
 		downloaderLabel = Instance.new('TextLabel')
@@ -356,21 +356,21 @@ local function finishLoading()
 				vape:Save()
 			end
 			if not hasQueueOnTeleport then
-				vape:CreateNotification('Pistonware', 'queue_on_teleport is not supported by your executor -- Vape will not re-inject automatically after this teleport (e.g. queueing into a match). You will need to re-run your loadstring manually.', 15, 'alert')
+				vape:CreateNotification('ClayV1', 'queue_on_teleport is not supported by your executor -- Vape will not re-inject automatically after this teleport (e.g. queueing into a match). You will need to re-run your loadstring manually.', 15, 'alert')
 			end
 			queue_on_teleport(teleportScript)
 		end
 	end))
 
 	if shared.PistonwareSyncResult then
-		vape:CreateNotification('Pistonware', shared.PistonwareSyncResult, 15, shared.PistonwareSyncResult:find('failed') and 'alert' or nil)
+		vape:CreateNotification('ClayV1', shared.PistonwareSyncResult, 15, shared.PistonwareSyncResult:find('failed') and 'alert' or nil)
 		shared.PistonwareSyncResult = nil
 	end
 
 	if not shared.vapereload then
 		if not vape.Categories then return end
 		if vape.Categories.Main.Options['GUI bind indicator'].Enabled then
-			vape:CreateNotification('Pistonware | Finished Loading', vape.VapeButton and 'Press the button in the top right to open GUI' or 'Press '..table.concat(vape.Keybind, ' + '):upper()..' to open GUI', 5)
+			vape:CreateNotification('ClayV1 | Finished Loading', vape.VapeButton and 'Press the button in the top right to open GUI' or 'Press '..table.concat(vape.Keybind, ' + '):upper()..' to open GUI', 5)
 		end
 	end
 end
