@@ -35,7 +35,7 @@ local Emotes = {
     { name = "Take The L", id = 133005847117851 },
 
     { name = "Fart", id = 85172385910433 },
-    { name = "I See Kareem Dance", id = 100738069927436 },
+    { name = "Orbital Body", id = 73124249069461 },
     { name = "Druski Shuffle Dance", id = 108939580037531 },
     { name = "Pasito cumbia", id = 139816236849217 },
     { name = "Hakari Dance", id = 122147154162464 },
