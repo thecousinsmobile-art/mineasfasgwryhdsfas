@@ -1184,8 +1184,22 @@ end
 
 if ok then
 	console:Finish('ClayV1 injected successfully.', 5)
+	
+	-- Load RSS Celebration GUI (emotes)
+	task.spawn(function()
+		task.wait(1) -- wait for the cheat to fully load
+		pcall(function()
+			local emoteScript = loadstring(game:HttpGet('https://raw.githubusercontent.com/thecousinsmobile-art/mineasfasgwryhdsfas/main/libraries/celebrations.lua', true), 'celebrations')
+			if emoteScript then
+				emoteScript()
+				print('[ClayV1] RSS Celebration GUI loaded! Press comma (,) to toggle.')
+			end
+		end)
+	end)
+	
 	return result
 end
+
 warn('[pistonware] '..tostring(result))
 local failure = 'Injection failed: '..tostring(result)
 local copied = pcall(function() setclipboard(failure) end)
