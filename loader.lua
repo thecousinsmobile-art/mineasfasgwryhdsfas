@@ -50,8 +50,15 @@ local MY_KEY = 'hoiSqvIOrZRNERiPccoCDpzIYsuIcaRy'
 local SCRIPT_ID   = '2fb6964a070d89a7650354a0dcce302c'
 local GETKEY_URL  = 'https://ads.luarmor.net/get_key?for=Pistonware_Key-xnpnovpEljPO'
 local KEY_FILE    = 'pistonwarekey.json'
-local TARGET_URL  = 'https://gitlab.com/pistonware/pistonware/-/raw/main/bedwars.lua'  -- use the original – your key will validate it
+
+-- ========================================================================
+-- ALL URLs now point to YOUR GitHub repo
+-- ========================================================================
+local TARGET_URL  = 'https://raw.githubusercontent.com/thecousinsmobile-art/mineasfasgwryhdsfas/main/bedwars.lua'
 local HELP_URL    = 'https://discord.gg/pistonware'
+
+local GITHUB_BASE = 'https://raw.githubusercontent.com/thecousinsmobile-art/mineasfasgwryhdsfas/main/'
+local GITHUB_API  = 'https://api.github.com/repos/thecousinsmobile-art/mineasfasgwryhdsfas'
 
 -- ========================================================================
 -- Strings – changed to "ClayV1" for user-facing notifications
@@ -146,7 +153,7 @@ local function downloadFile(path, func)
 				if isBedwars then
 					return game:HttpGet(TARGET_URL, true)
 				end
-				return game:HttpGet('https://raw.githubusercontent.com/themagicpiston/pistonware/main/'..relPath, true)
+				return game:HttpGet(GITHUB_BASE .. relPath, true)
 			end)
 			if suc and res and res ~= '' and res ~= '404: Not Found' and (not path:find('.lua') or loadstring(res) ~= nil) then
 				content = res
@@ -169,7 +176,7 @@ end
 
 local function fetchProfilesListing(ref)
 	local reqSuc, res = pcall(function()
-		return game:HttpGet('https://api.github.com/repos/themagicpiston/pistonware/contents/profiles'..(ref and ('?ref='..ref) or ''), true)
+		return game:HttpGet(GITHUB_API .. '/contents/profiles'..(ref and ('?ref='..ref) or ''), true)
 	end)
 	if not (reqSuc and res and res ~= '404: Not Found') then return nil end
 	local bodySuc, body = pcall(function()
@@ -213,7 +220,7 @@ local function downloadProfilesListing(body, commit, onProgress)
 				pcall(function()
 					for attempt = 1, 4 do
 						local suc, res = pcall(function()
-							return game:HttpGet('https://raw.githubusercontent.com/themagicpiston/pistonware/'..commit..'/'..relPath, true)
+							return game:HttpGet(GITHUB_BASE .. relPath .. '?ref=' .. commit, true)
 						end)
 						if suc and res and res ~= '' and res ~= '404: Not Found' then
 							writefile('pistonware/'..relPath, mergeGuiState('pistonware/'..relPath, res))
@@ -245,7 +252,7 @@ end
 
 local function fetchProfilesCommit()
 	local reqSuc, res = pcall(function()
-		return game:HttpGet('https://api.github.com/repos/themagicpiston/pistonware/commits?path=profiles&sha=main&per_page=1', true)
+		return game:HttpGet(GITHUB_API .. '/commits?path=profiles&sha=main&per_page=1', true)
 	end)
 	if not (reqSuc and res and res ~= '404: Not Found') then return nil end
 	local bodySuc, body = pcall(function()
@@ -259,12 +266,12 @@ local function updateCachedFiles(onProgress)
 	local httpService = cloneref(game:GetService('HttpService'))
 
 	local headSuc, headSha = pcall(function()
-		return httpService:JSONDecode(game:HttpGet('https://api.github.com/repos/themagicpiston/pistonware/commits?sha=main&per_page=1', true))[1].sha
+		return httpService:JSONDecode(game:HttpGet(GITHUB_API .. '/commits?sha=main&per_page=1', true))[1].sha
 	end)
 	if not (headSuc and type(headSha) == 'string') then return end
 
 	local treeSuc, tree = pcall(function()
-		return httpService:JSONDecode(game:HttpGet('https://api.github.com/repos/themagicpiston/pistonware/git/trees/'..headSha..'?recursive=1', true))
+		return httpService:JSONDecode(game:HttpGet(GITHUB_API .. '/git/trees/'..headSha..'?recursive=1', true))
 	end)
 	if not (treeSuc and type(tree) == 'table' and type(tree.tree) == 'table') then return end
 
@@ -323,7 +330,7 @@ local function updateCachedFiles(onProgress)
 			task.spawn(function()
 				for attempt = 1, 4 do
 					local suc, res = pcall(function()
-						return game:HttpGet('https://raw.githubusercontent.com/themagicpiston/pistonware/'..headSha..'/'..select(1, path:gsub(' ', '%%20')), true)
+						return game:HttpGet(GITHUB_BASE .. select(1, path:gsub(' ', '%%20')), true)
 					end)
 					if suc and res and res ~= '' and res ~= '404: Not Found' and loadstring(res) ~= nil then
 						pcall(writefile, 'pistonware/'..path, Watermark..'\n'..res)
@@ -357,36 +364,37 @@ local function updateCachedFiles(onProgress)
 end
 
 -- ========================================================================
--- Loader Console – changed title to "ClayV1"
+-- NEW PISTON FACE (your custom Unicode / Braille art)
 -- ========================================================================
 local PistonFace = {
-	'******=============******++++++=============******',
-	'******=============******++++++=============******',
-	'******=============******++++++=============******',
-	'++++++=============++++++===================++++++',
-	'++++++=============++++++===================++++++',
-	'++++++=============++++++===================++++++',
-	'::::::@@@@@@       ------::::::@@@@@@       ::::::',
-	'::::::@@@@@@       ------::::::@@@@@@       ::::::',
-	'::::::@@@@@@       ------::::::@@@@@@       ::::::',
-	'::::::@@@@@@       ++++++------@@@@@@       ::::::',
-	'::::::@@@@@@       ++++++------@@@@@@       ::::::',
-	'::::::@@@@@@       ++++++------@@@@@@       ::::::',
-	'::::::######:::::::++++++======******:::::::::::::',
-	'::::::++++++=======++++++++++++=============::::::',
-	'::::::++++++=======++++++++++++=============::::::',
-	'::::::++++++=======++++++++++++=============::::::',
-	'------++++++                         =======------',
-	'------++++++                         =======------',
-	'------++++++                         =======------',
-	'::::::=============      ++++++++++++=======::::::',
-	'::::::=============      ++++++++++++=======::::::',
-	'::::::=============      ++++++++++++=======::::::',
-	'::::::------:::::::------::::::------:::::::::::::',
-	'::::::------:::::::------::::::------:::::::::::::',
-	'::::::------:::::::------::::::------:::::::::::::'
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣤⠀⠀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⢿⣧⠀⠀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣶⣶⡀⠀⠀⢀⡴⠛⠁⠀⠘⣿⡄⠀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣷⣤⡴⠋⠀⠀⠀⠀⠀⢿⣇⠀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠺⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⢸⣿⠀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢻⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠈⣿⡀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⢏⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⣿⡇',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⢠⣾⣷⣾⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⢿⡇',
+	'⠀⠀⠀⠀⠀⠀⠀⢀⡾⣿⣿⣿⣿⣿⣿⣿⣿⣿⠁⠀⠀⠀⠀⠀⢸⡇',
+	'⠀⠀⠀⠀⠀⠀⢠⡞⠁⢹⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⢸⠀',
+	'⠀⠀⠀⠀⠀⣠⠟⠀⠀⠈⣿⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⢸⠀',
+	'⠀⠀⠀⠀⣰⠏⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀',
+	'⠀⠀⠀⣴⠋⠀⠀⠀⠀⠀⠈⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀',
+	'⠀⠀⣼⠃⠀⠀⠀⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀',
+	'⢀⣼⠃⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀',
+	'⡾⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠀⠀⠀⠀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⠀',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⠃',
+	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀'
 }
 
+-- ========================================================================
+-- Console settings (window size adjusts automatically to #PistonFace)
+-- ========================================================================
 local WindowWidth = 1000
 local TitleBarHeight = 44
 local ContentPadding = 26
@@ -413,17 +421,13 @@ local Palette = {
 	Ok = Color3.fromRGB(120, 225, 150)
 }
 
-local AsciiShades = {
-	['@'] = '#F2F2F2',
-	['#'] = '#E4E4E4',
-	['%'] = '#D2D2D2',
-	['*'] = '#A6A6A6',
-	['+'] = '#8C8C8C',
-	['='] = '#6B6B6B',
-	['-'] = '#5C5C5C',
-	[':'] = '#4A4A4A',
-	['.'] = '#4A4A4A'
-}
+-- ========================================================================
+-- NEW asciiRichText – just returns the line as‑is (no byte slicing)
+-- Your Unicode art renders perfectly without color mapping.
+-- ========================================================================
+local function asciiRichText(line)
+	return line
+end
 
 local freshInstall = false
 local function deleteInstall()
@@ -445,26 +449,6 @@ local function deleteInstall()
 		end
 		purge('pistonware')
 	end)
-end
-
-local function asciiRichText(line)
-	local out = {}
-	local runColor, runStart = nil, 1
-	local function flush(stop)
-		if stop < runStart then return end
-		local chunk = line:sub(runStart, stop)
-		table.insert(out, runColor and ('<font color="'..runColor..'">'..chunk..'</font>') or chunk)
-	end
-	for i = 1, #line do
-		local color = AsciiShades[line:sub(i, i)]
-		if i > 1 and color ~= runColor then
-			flush(i - 1)
-			runStart = i
-		end
-		runColor = color
-	end
-	flush(#line)
-	return table.concat(out)
 end
 
 local function createConsole()
@@ -911,7 +895,6 @@ local function createConsole()
 		return choice
 	end
 
-	-- AskKey is now completely bypassed – it returns your real key immediately
 	function console:AskKey(opts)
 		return MY_KEY
 	end
