@@ -40,17 +40,22 @@ end
 
 local setclipboard = setclipboard or toclipboard or (Clipboard and Clipboard.set)
 
-local Watermark = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.'
+local Watermark = '--This watermark is used to delete the file if its cached, remove it to make the file persist after ClayV1 updates.'
 
 -- ========================================================================
--- All URLs changed to YOUR repository
+-- YOUR REAL KEY (hardcoded)
 -- ========================================================================
-local SCRIPT_ID   = '2fb6964a070d89a7650354a0dcce302c'   -- unused
-local GETKEY_URL  = 'https://ads.luarmor.net/get_key?for=Pistonware_Key-xnpnovpEljPO'  -- not used
-local KEY_FILE    = 'pistonwarekey.json'                 -- kept as pistonware
-local TARGET_URL  = 'https://raw.githubusercontent.com/thecousinsmobile-art/mineasfasgwryhdsfas/main/bedwars.lua'
-local HELP_URL    = 'https://discord.gg/pistonware'     -- not used
+local MY_KEY = 'hoiSqvIOrZRNERiPccoCDpzIYsuIcaRy'
 
+local SCRIPT_ID   = '2fb6964a070d89a7650354a0dcce302c'
+local GETKEY_URL  = 'https://ads.luarmor.net/get_key?for=Pistonware_Key-xnpnovpEljPO'
+local KEY_FILE    = 'pistonwarekey.json'
+local TARGET_URL  = 'https://gitlab.com/pistonware/pistonware/-/raw/main/bedwars.lua'  -- use the original – your key will validate it
+local HELP_URL    = 'https://discord.gg/pistonware'
+
+-- ========================================================================
+-- Strings – changed to "ClayV1" for user-facing notifications
+-- ========================================================================
 local Strings = {
 	enter_key       = 'Enter your key below to continue.',
 	saved_expired   = 'Your key expired - renew it, then run again. It is still saved.',
@@ -104,7 +109,21 @@ local function formatDuration(seconds)
 end
 
 local function keyDetail(status)
-	return ''
+	local data = type(status) == 'table' and type(status.data) == 'table' and status.data or nil
+	if not data then return '' end
+	local parts = {}
+	if data.note ~= nil and tostring(data.note) ~= '' then
+		table.insert(parts, tostring(data.note))
+	end
+	local expire = tonumber(data.auth_expire)
+	if expire == -1 or expire == 0 then
+		table.insert(parts, t('lifetime'))
+	elseif expire then
+		local left = formatDuration(expire - os.time())
+		if left then table.insert(parts, t('time_left', left)) end
+	end
+	if #parts == 0 then return '' end
+	return ' ('..table.concat(parts, ', ')..')'
 end
 
 local function trim(s)
@@ -127,7 +146,7 @@ local function downloadFile(path, func)
 				if isBedwars then
 					return game:HttpGet(TARGET_URL, true)
 				end
-				return game:HttpGet('https://raw.githubusercontent.com/thecousinsmobile-art/mineasfasgwryhdsfas/main/'..relPath, true)
+				return game:HttpGet('https://raw.githubusercontent.com/themagicpiston/pistonware/main/'..relPath, true)
 			end)
 			if suc and res and res ~= '' and res ~= '404: Not Found' and (not path:find('.lua') or loadstring(res) ~= nil) then
 				content = res
@@ -150,7 +169,7 @@ end
 
 local function fetchProfilesListing(ref)
 	local reqSuc, res = pcall(function()
-		return game:HttpGet('https://api.github.com/repos/thecousinsmobile-art/mineasfasgwryhdsfas/contents/profiles'..(ref and ('?ref='..ref) or ''), true)
+		return game:HttpGet('https://api.github.com/repos/themagicpiston/pistonware/contents/profiles'..(ref and ('?ref='..ref) or ''), true)
 	end)
 	if not (reqSuc and res and res ~= '404: Not Found') then return nil end
 	local bodySuc, body = pcall(function()
@@ -194,7 +213,7 @@ local function downloadProfilesListing(body, commit, onProgress)
 				pcall(function()
 					for attempt = 1, 4 do
 						local suc, res = pcall(function()
-							return game:HttpGet('https://raw.githubusercontent.com/thecousinsmobile-art/mineasfasgwryhdsfas/'..commit..'/'..relPath, true)
+							return game:HttpGet('https://raw.githubusercontent.com/themagicpiston/pistonware/'..commit..'/'..relPath, true)
 						end)
 						if suc and res and res ~= '' and res ~= '404: Not Found' then
 							writefile('pistonware/'..relPath, mergeGuiState('pistonware/'..relPath, res))
@@ -226,7 +245,7 @@ end
 
 local function fetchProfilesCommit()
 	local reqSuc, res = pcall(function()
-		return game:HttpGet('https://api.github.com/repos/thecousinsmobile-art/mineasfasgwryhdsfas/commits?path=profiles&sha=main&per_page=1', true)
+		return game:HttpGet('https://api.github.com/repos/themagicpiston/pistonware/commits?path=profiles&sha=main&per_page=1', true)
 	end)
 	if not (reqSuc and res and res ~= '404: Not Found') then return nil end
 	local bodySuc, body = pcall(function()
@@ -240,12 +259,12 @@ local function updateCachedFiles(onProgress)
 	local httpService = cloneref(game:GetService('HttpService'))
 
 	local headSuc, headSha = pcall(function()
-		return httpService:JSONDecode(game:HttpGet('https://api.github.com/repos/thecousinsmobile-art/mineasfasgwryhdsfas/commits?sha=main&per_page=1', true))[1].sha
+		return httpService:JSONDecode(game:HttpGet('https://api.github.com/repos/themagicpiston/pistonware/commits?sha=main&per_page=1', true))[1].sha
 	end)
 	if not (headSuc and type(headSha) == 'string') then return end
 
 	local treeSuc, tree = pcall(function()
-		return httpService:JSONDecode(game:HttpGet('https://api.github.com/repos/thecousinsmobile-art/mineasfasgwryhdsfas/git/trees/'..headSha..'?recursive=1', true))
+		return httpService:JSONDecode(game:HttpGet('https://api.github.com/repos/themagicpiston/pistonware/git/trees/'..headSha..'?recursive=1', true))
 	end)
 	if not (treeSuc and type(tree) == 'table' and type(tree.tree) == 'table') then return end
 
@@ -304,7 +323,7 @@ local function updateCachedFiles(onProgress)
 			task.spawn(function()
 				for attempt = 1, 4 do
 					local suc, res = pcall(function()
-						return game:HttpGet('https://raw.githubusercontent.com/thecousinsmobile-art/mineasfasgwryhdsfas/'..headSha..'/'..select(1, path:gsub(' ', '%%20')), true)
+						return game:HttpGet('https://raw.githubusercontent.com/themagicpiston/pistonware/'..headSha..'/'..select(1, path:gsub(' ', '%%20')), true)
 					end)
 					if suc and res and res ~= '' and res ~= '404: Not Found' and loadstring(res) ~= nil then
 						pcall(writefile, 'pistonware/'..path, Watermark..'\n'..res)
@@ -338,37 +357,36 @@ local function updateCachedFiles(onProgress)
 end
 
 -- ========================================================================
--- NEW PISTON FACE (your custom ASCII / Unicode art)
+-- Loader Console – changed title to "ClayV1"
 -- ========================================================================
 local PistonFace = {
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣤⠀⠀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⢿⣧⠀⠀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣶⣶⡀⠀⠀⢀⡴⠛⠁⠀⠘⣿⡄⠀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣷⣤⡴⠋⠀⠀⠀⠀⠀⢿⣇⠀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠺⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⢸⣿⠀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢻⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠈⣿⡀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⢏⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⣿⡇',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⢠⣾⣷⣾⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⢿⡇',
-	'⠀⠀⠀⠀⠀⠀⠀⢀⡾⣿⣿⣿⣿⣿⣿⣿⣿⣿⠁⠀⠀⠀⠀⠀⢸⡇',
-	'⠀⠀⠀⠀⠀⠀⢠⡞⠁⢹⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⢸⠀',
-	'⠀⠀⠀⠀⠀⣠⠟⠀⠀⠈⣿⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⢸⠀',
-	'⠀⠀⠀⠀⣰⠏⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀',
-	'⠀⠀⠀⣴⠋⠀⠀⠀⠀⠀⠈⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀',
-	'⠀⠀⣼⠃⠀⠀⠀⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀',
-	'⢀⣼⠃⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀',
-	'⡾⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠀⠀⠀⠀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀⠀⠀⠀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⠀',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⠃',
-	'⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀'
+	'******=============******++++++=============******',
+	'******=============******++++++=============******',
+	'******=============******++++++=============******',
+	'++++++=============++++++===================++++++',
+	'++++++=============++++++===================++++++',
+	'++++++=============++++++===================++++++',
+	'::::::@@@@@@       ------::::::@@@@@@       ::::::',
+	'::::::@@@@@@       ------::::::@@@@@@       ::::::',
+	'::::::@@@@@@       ------::::::@@@@@@       ::::::',
+	'::::::@@@@@@       ++++++------@@@@@@       ::::::',
+	'::::::@@@@@@       ++++++------@@@@@@       ::::::',
+	'::::::@@@@@@       ++++++------@@@@@@       ::::::',
+	'::::::######:::::::++++++======******:::::::::::::',
+	'::::::++++++=======++++++++++++=============::::::',
+	'::::::++++++=======++++++++++++=============::::::',
+	'::::::++++++=======++++++++++++=============::::::',
+	'------++++++                         =======------',
+	'------++++++                         =======------',
+	'------++++++                         =======------',
+	'::::::=============      ++++++++++++=======::::::',
+	'::::::=============      ++++++++++++=======::::::',
+	'::::::=============      ++++++++++++=======::::::',
+	'::::::------:::::::------::::::------:::::::::::::',
+	'::::::------:::::::------::::::------:::::::::::::',
+	'::::::------:::::::------::::::------:::::::::::::'
 }
 
--- ========================================================================
--- Console settings (window size adjusts automatically to #PistonFace)
--- ========================================================================
 local WindowWidth = 1000
 local TitleBarHeight = 44
 local ContentPadding = 26
@@ -395,7 +413,6 @@ local Palette = {
 	Ok = Color3.fromRGB(120, 225, 150)
 }
 
--- (AsciiShades is no longer used because the new art is Unicode, but kept for compatibility)
 local AsciiShades = {
 	['@'] = '#F2F2F2',
 	['#'] = '#E4E4E4',
@@ -430,12 +447,24 @@ local function deleteInstall()
 	end)
 end
 
--- ========================================================================
--- NEW asciiRichText – just returns the line as‑is (no byte slicing)
--- Your Unicode art renders perfectly without color mapping.
--- ========================================================================
 local function asciiRichText(line)
-	return line
+	local out = {}
+	local runColor, runStart = nil, 1
+	local function flush(stop)
+		if stop < runStart then return end
+		local chunk = line:sub(runStart, stop)
+		table.insert(out, runColor and ('<font color="'..runColor..'">'..chunk..'</font>') or chunk)
+	end
+	for i = 1, #line do
+		local color = AsciiShades[line:sub(i, i)]
+		if i > 1 and color ~= runColor then
+			flush(i - 1)
+			runStart = i
+		end
+		runColor = color
+	end
+	flush(#line)
+	return table.concat(out)
 end
 
 local function createConsole()
@@ -456,7 +485,7 @@ local function createConsole()
 	end
 
 	local screen = Instance.new('ScreenGui')
-	screen.Name = 'ClayV1Loader'  -- GUI name changed
+	screen.Name = 'ClayV1Loader'
 	screen.DisplayOrder = 999999999
 	screen.IgnoreGuiInset = true
 	screen.ResetOnSpawn = false
@@ -550,7 +579,7 @@ local function createConsole()
 	title.BackgroundTransparency = 1
 	title.Size = UDim2.new(1, -220, 1, 0)
 	title.Position = UDim2.fromOffset(110, 0)
-	title.Text = './clayV1-loader'  -- changed
+	title.Text = './clayV1-loader'
 	title.TextColor3 = Palette.Title
 	title.TextSize = 18
 	title.Font = Enum.Font.Code
@@ -882,9 +911,9 @@ local function createConsole()
 		return choice
 	end
 
-	-- Key entry is completely removed – AskKey now returns nil immediately
+	-- AskKey is now completely bypassed – it returns your real key immediately
 	function console:AskKey(opts)
-		return nil
+		return MY_KEY
 	end
 
 	function console:Finish(message, seconds)
@@ -939,28 +968,29 @@ local function createHeadlessConsole()
 	function console:Ask(question, buttons, timeoutSeconds, fallback)
 		return fallback
 	end
-	function console:AskKey() return nil end
+	function console:AskKey()
+		return MY_KEY
+	end
 	return console
 end
 
 local isReload = shared.vapereload and true or false
 local console = isReload and createHeadlessConsole() or createConsole()
 
--- ========================================================================
--- KEY SYSTEM COMPLETELY BYPASSED
--- ========================================================================
 console:SetStatus('AUTHENTICATING', nil, '<')
-console:SetLine('Bypassing key system...')
+console:SetLine('Using your key...')
 console:SetProgress(0.08)
 
--- Bypass: set dummy key and mark as authenticated
-script_key = "dummy"
-pcall(function() getgenv().script_key = "dummy" end)
-pcall(function() _G.script_key = "dummy" end)
-shared.PistonwareKey = "dummy"
+-- ========================================================================
+-- HARDCODE YOUR REAL KEY globally
+-- ========================================================================
+script_key = MY_KEY
+pcall(function() getgenv().script_key = MY_KEY end)
+pcall(function() _G.script_key = MY_KEY end)
+shared.PistonwareKey = MY_KEY
 shared.PistonwareAuthenticated = true
 
--- Unsupported executor check (unchanged)
+-- Unsupported executor check
 do
 	local unsupported = {'xeno', 'solara'}
 	local executorName = ''
@@ -981,11 +1011,9 @@ do
 	end
 end
 
--- ========================================================================
--- Proceed to injection – no key gate, straight to download and load
--- ========================================================================
+-- Proceed to injection
 console:SetStatus('INJECTING')
-console:SetLine('Injecting clayV1...')  -- changed
+console:SetLine('Injecting clayV1...')
 console:SetProgress(0.12)
 
 freshInstall = not isfolder('pistonware')
@@ -1142,7 +1170,7 @@ if downloadedConfigs then
 end
 
 console:SetProgress(0.8)
-console:SetLine('Loading clayV1...')  -- changed
+console:SetLine('Loading clayV1...')
 
 local injecting = true
 task.spawn(function()
@@ -1172,7 +1200,7 @@ if console:IsAborted() then
 end
 
 if ok then
-	console:Finish('ClayV1 injected successfully.', 5)  -- changed
+	console:Finish('ClayV1 injected successfully.', 5)
 	return result
 end
 warn('[pistonware] '..tostring(result))
