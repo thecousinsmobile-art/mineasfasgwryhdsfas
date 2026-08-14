@@ -34,7 +34,7 @@ local Emotes = {
     { name = "FF LOL Laugh", id = 129709531895539 },
     { name = "Take The L", id = 133005847117851 },
 
-    { name = "Hide", id = 84868707350198 },
+    { name = "Hide", id = 129292509810471 },
     { name = "Orbital Body", id = 73124249069461 },
     { name = "Druski Shuffle Dance", id = 108939580037531 },
     { name = "Pasito cumbia", id = 139816236849217 },
